@@ -1,0 +1,38 @@
+# ========================================
+# RS-CRAFT Pipeline Configuration
+# Rejection Sampling baseline for the rebuttal:
+#   1. Sample N candidates per prompt from base 7B
+#   2. Score each with R_fmt + R_gold + R_ans + R_faith (same auditor as CRAFT)
+#   3. Keep argmax(mean) per prompt
+#   4. SFT on the filtered set (cfg/sft_rscraft.yaml)
+# ========================================
+
+# Sampling
+base_model: Qwen/Qwen2.5-7B-Instruct
+template_version: v1
+n_candidates: 4              # Aligned with GRPO group size (paper Table 5)
+sample_temperature: 1.0
+sample_top_p: 0.9
+sample_max_new_tokens: 512
+
+# vLLM server connection (the base 7B used as candidate generator)
+vllm_host: http://localhost
+vllm_port: 8002
+sample_max_workers: 32
+
+# Judge (Qwen3-30B-A3B local mode)
+# Start the judge separately: scripts/server/start_judge.sh
+judge_mode: local
+judge_model: Qwen/Qwen3-30B-A3B-Instruct-2507
+judge_url: http://localhost:8000/v1
+batch_reward_workers: 32
+
+# I/O
+input_dataset: data/train/grpo/grpo_25000_v1_messages.jsonl
+candidates_path: data/train/rscraft/candidates_v1.jsonl
+scored_path: data/train/rscraft/scored_v1.jsonl
+selected_path: data/train/rscraft/rscraft_best_of_4_v1.jsonl
+
+# Selection rules
+min_total_score: 0.0         # 0.0 = keep any prompt with at least one R_fmt=1 candidate
+                             # raise to 0.5 for stricter floor

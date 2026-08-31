@@ -1,0 +1,114 @@
+# ========================================
+# 7B GRPO with judge — REBUILD of the lost CRAFT 7B w/-judge checkpoint.
+# Mirrors the historical 1.5B w/-judge config but scaled to 7B.
+# Judge: Volcengine API (set JUDGE_MODE=volcengine; key in .env as VOLCENGINE).
+# ========================================
+
+model: Qwen/Qwen2.5-7B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+attn_impl: flash_attn
+tuner_type: full
+use_hf: true
+
+# Same training data as historical paper run
+dataset: data/train/grpo/grpo_25000_v1_messages.jsonl
+dataset_num_proc: 8
+max_length: 8192
+vllm_mode: 'colocate'
+# sleep_level=1: free vLLM KV cache during training step (recovered for
+# rollouts). sleep_level=0 + higher mem_util OOMs on backward pass — see
+# crash on 2026-04-30 step 2 (86.45 GB allocated, 230 MiB free).
+sleep_level: 1
+
+rlhf_type: grpo
+
+reward_funcs:
+  - format_reward
+  - accuracy_reward
+  - judge_overall_consistency_reward
+  - relevance_reward
+
+reward_weights:
+  - 1.0     # R_fmt
+  - 1.0     # R_ans
+  - 1.0     # R_faith
+  - 1.0     # R_gold
+
+template_version: v1
+
+# Volcengine Ark — Doubao 1.5 Pro 32k (text LLM, ~2× faster than Seed 2.0 Pro).
+# Seed 2.0 Pro p50 was ~17s/call; 1.5 Pro is ~8s, halving total ETA.
+# JUDGE_MODE=volcengine + VOLCENGINE key from .env
+judge_model: doubao-1-5-pro-32k-250115
+# 64-way concurrency: with the lighter judge, tail latency stays well under
+# the 200s per-attempt timeout. Operator can hot-tune via /tmp/craft_judge_conc.
+batch_reward_workers: 64
+
+# Generation (matches the historical 7B paper run's args.json exactly)
+num_beams: 1
+temperature: 1.0
+top_k: 20
+top_p: 0.9
+repetition_penalty: 1.0
+max_new_tokens: 512
+max_completion_length: 512
+num_generations: 8           # historical 7B used 8 (paper Table 5 said 4 — args.json is truth)
+num_sample_generations: 4
+
+# Training — exactly matches historical 7B paper run (v1-20260109-123808, 11.94 hr).
+# Effective batch = 8 × 16 × 4 = 512 prompts/opt step, → 25000/512 ≈ 49 opt steps.
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+num_train_epochs: 1
+max_steps: -1
+warmup_ratio: 0.1
+learning_rate: 3.0e-6        # historical paper LR
+lr_scheduler_type: cosine
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 16
+max_grad_norm: 1.0
+weight_decay: 0.0
+
+do_eval: false
+eval_strategy: 'no'
+
+use_vllm: true
+# Paper baseline: TP=2 across pairs of GPUs, mem_util=0.30.
+# (We tried 0.45 — OOMed on step 2 backward.)
+vllm_tensor_parallel_size: 2
+vllm_gpu_memory_utilization: 0.30
+vllm_max_model_len: 8192
+# Prefix caching: huge win for num_generations=8 with shared 5K-token
+# prompts. The prompt KV is computed once and reused across all 8 rollouts,
+# vs re-prefilling 8× without it. Memory-cheap — keeps working at mem_util=0.30.
+vllm_enable_prefix_caching: true
+
+# Historical paper run used ZeRO-3 (full-param sharding) — much more headroom for vLLM colocate.
+deepspeed: cfg/deepspeed/ds_config_zero3.json
+
+# Logging / checkpoint
+output_dir: checkpoints/Qwen2.5-7B-Instruct-GRPO-Judge
+overwrite_output_dir: true
+logging_steps: 1
+logging_first_step: true
+logging_strategy: steps
+log_level: info
+log_completions: true
+save_strategy: steps
+save_steps: 30        # save every 30 opt steps (≈ 60% of full epoch's ~49 steps)
+save_total_limit: 2   # keep only the 2 most recent checkpoints
+# resume_from_checkpoint is auto-detected by scripts/train/grpo.sh when re-launching:
+# if checkpoint-N exists in output_dir, the script passes its path through.
+report_to:
+  - tensorboard
+
+seed: 42
+dataloader_num_workers: 4
+dataloader_pin_memory: true
+ddp_find_unused_parameters: false
+push_to_hub: false
+load_from_cache_file: false

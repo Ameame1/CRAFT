@@ -1,0 +1,132 @@
+# ========================================
+# 1.5B GRPO baseline WITHOUT judge reward
+# Used to measure judge overhead by comparison against the existing
+# 1.5B w/ judge run at:
+#   checkpoints/Qwen2.5-1.5B-Instruct-Solver-GRPO/v1-20260114-210118
+#   (390 steps, 13.29 hr, 122.71 s/step, on 2 H100)
+#
+# Plan:
+#   1. Run this config 50 steps on 4 H100 (gradient_accumulation halved
+#      from 32 -> 16 to keep effective batch at 512).
+#   2. Record per-step wall-clock from the new tensorboard.
+#   3. Optionally run a 50-step w/ judge replica on the same 4-GPU
+#      config (set reward_funcs to include judge_overall_consistency_reward
+#      and reward_weights to [1,1,1,1]) for a fully apples-to-apples
+#      comparison on identical hardware.
+#
+# Comparison method:
+#   judge_overhead_per_step (s) = step_time_with_judge - step_time_without_judge
+#   judge_overhead_per_run  (h) = overhead_per_step * 390 / 3600
+# ========================================
+
+# Model (matches the existing 1.5B w/ judge run)
+model: Qwen/Qwen2.5-1.5B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+attn_impl: flash_attn
+tuner_type: full
+use_hf: true
+
+# Dataset (same v1 training set as the w/ judge run)
+dataset: data/train/grpo/grpo_25000_v1_messages.jsonl
+dataset_num_proc: 8
+max_length: 8192
+vllm_mode: 'colocate'
+vllm_tensor_parallel_size: 1
+sleep_level: 1
+
+# ========================================
+# GRPO & Rewards (judge REMOVED for the baseline)
+# ========================================
+rlhf_type: grpo
+
+# w/o judge: only deterministic rewards
+reward_funcs:
+  - format_reward                    # R_fmt
+  - accuracy_reward                  # R_ans
+  - relevance_reward                 # R_gold
+
+reward_weights:
+  - 1.0  # R_fmt
+  - 1.0  # R_ans
+  - 1.0  # R_gold
+
+template_version: v1
+
+# Judge params still required by craft_rewards (read but never invoked
+# because judge_overall_consistency_reward is not in reward_funcs)
+judge_model: qwen-max
+batch_reward_workers: 32
+
+# ========================================
+# Generation (same as cfg/grpo.yaml)
+# ========================================
+num_beams: 1
+temperature: 1.0
+top_k: 20
+top_p: 0.9
+repetition_penalty: 1.0
+max_new_tokens: 256
+num_sample_generations: 4
+
+# ========================================
+# Training (50 steps for the overhead baseline)
+# ========================================
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+num_train_epochs: 1
+max_steps: 50                        # short baseline run
+warmup_ratio: 0.1
+learning_rate: 5.0e-6
+lr_scheduler_type: cosine
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 16      # 4 GPUs x 8 x 16 = 512 effective batch
+                                     # (matches the 2 GPUs x 8 x 32 setup used
+                                     # by the existing 1.5B w/ judge run)
+max_grad_norm: 1.0
+weight_decay: 0.0
+
+# ========================================
+# Evaluation off (we only need step timings)
+# ========================================
+do_eval: false
+eval_strategy: 'no'
+
+# ========================================
+# vLLM (colocate)
+# ========================================
+use_vllm: true
+vllm_gpu_memory_utilization: 0.15
+vllm_max_model_len: 8192
+
+# ========================================
+# DeepSpeed
+# ========================================
+deepspeed: cfg/deepspeed/ds_config_zero2.json
+
+# ========================================
+# Logging & Checkpoints
+# ========================================
+output_dir: checkpoints/CRAFT-1.5B-NoJudge-Baseline
+overwrite_output_dir: true
+logging_steps: 1
+logging_first_step: true
+logging_strategy: steps
+log_level: info
+log_completions: false
+save_strategy: 'no'                  # 50 steps, no need to checkpoint
+report_to:
+  - tensorboard
+
+# ========================================
+# Misc
+# ========================================
+seed: 42
+dataloader_num_workers: 4
+dataloader_pin_memory: true
+ddp_find_unused_parameters: false
+push_to_hub: false
+load_from_cache_file: false

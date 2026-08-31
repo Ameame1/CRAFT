@@ -1,0 +1,78 @@
+# ========================================
+# RS-CRAFT SFT Configuration
+# Trains on best-of-N reward-filtered traces (output of scripts/rscraft/select_best.py)
+# Mirrors cfg/sft.yaml; only model + dataset + output_dir differ.
+# ========================================
+
+# Model: pin to 7B for the rebuttal RS-CRAFT row
+model: Qwen/Qwen2.5-7B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+use_hf: true
+attn_impl: flash_attn
+
+tuner_type: full
+# loss_type left as default (None → uses HF's internal causal-LM CE)
+use_logits_to_keep: false
+
+# Dataset: produced by scripts/rscraft/select_best.py
+# Using the system/query/response format for ms-swift compatibility
+dataset: data/train/rscraft/rscraft_best_of_4_v1_sft.jsonl
+val_dataset: []
+dataset_num_proc: 8
+max_length: 8192
+packing: false
+
+bf16: true
+fp16: false
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 8
+
+learning_rate: 5.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+weight_decay: 0.01
+max_grad_norm: 1.0
+
+optim: adamw_torch
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_epsilon: 1.0e-8
+
+num_train_epochs: 4
+max_steps: -1
+save_total_limit: 3
+
+do_eval: false
+eval_strategy: no
+save_strategy: steps
+logging_steps: 1
+logging_first_step: true
+logging_strategy: steps
+
+output_dir: checkpoints/RS-CRAFT-7B-v1
+overwrite_output_dir: false
+save_only_model: false
+
+report_to:
+  - tensorboard
+log_level: info
+
+seed: 42
+dataloader_num_workers: 4
+dataloader_pin_memory: true
+ddp_find_unused_parameters: false
+
+# DeepSpeed disabled — ms-swift 4.1.3 + DeepSpeed has a loss=0 regression on
+# our setup. Use HF FSDP instead for sharding the 7B optimizer state across 4 GPUs.
+# deepspeed: cfg/deepspeed/ds_config_zero2.json
+fsdp: full_shard auto_wrap
+fsdp_transformer_layer_cls_to_wrap: Qwen2DecoderLayer
+fsdp_config: cfg/fsdp_config.json
+
+save_safetensors: true

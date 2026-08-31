@@ -1,0 +1,117 @@
+# ========================================
+# CRAFT SFT Training Configuration
+# Full parameter fine-tuning for comparison experiments
+# ========================================
+
+# ========================
+# Model Configuration
+# ========================
+# Supported models: Qwen2.5-0.5B, 1.5B, 3B, 7B
+model: Qwen/Qwen2.5-1.5B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+use_hf: true  # Use HuggingFace model loading
+
+# Attention implementation (flash_attn recommended for A100/H100)
+attn_impl: flash_attn
+
+# ========================
+# Training Type: FULL Fine-tuning
+# ========================
+tuner_type: full  # Full parameter fine-tuning
+
+# ========================
+# Dataset Configuration
+# ========================
+# Custom dataset path - uses SFT dataset with filled reasoning
+# Template-specific datasets available:
+# - data/train/grpo/grpo_25000_v1_messages.jsonl (full: plan + gold_docs + reason + answer)
+# - data/train/grpo/grpo_25000_v2_messages.jsonl (no plan: gold_docs + reason + answer)
+# - data/train/grpo/grpo_25000_v3_messages.jsonl (no gold_docs: plan + reason + answer)
+# - data/train/grpo/grpo_25000_v4_messages.jsonl (minimal: reason + answer)
+# - data/train/grpo/grpo_25000_v5_messages.jsonl (answer only)
+dataset: data/train/grpo/grpo_25000_v1_messages.jsonl
+val_dataset: []  # Can add validation split if needed
+dataset_num_proc: 8  # Parallel data processing
+max_length: 8192  # Maximum sequence length
+
+# Packing for efficiency (requires flash_attn)
+packing: false
+
+# ========================
+# Training Arguments
+# ========================
+# Compute & Memory
+bf16: true
+fp16: false
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+
+# Batch size & Gradient accumulation
+# Optimized for 2x H100 with ZeRO-2
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 8  # Effective batch = 4 * 8 * 2 = 64
+
+# Learning rate & Optimization
+learning_rate: 5.0e-6  # Lower LR for full parameter training
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+weight_decay: 0.01
+max_grad_norm: 1.0
+
+# Optimizer settings
+optim: adamw_torch
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_epsilon: 1.0e-8
+
+# Training duration
+num_train_epochs: 4
+max_steps: -1  # -1 means use num_train_epochs
+save_total_limit: 3  # Keep only 3 checkpoints
+
+# ========================
+# Evaluation & Logging
+# ========================
+do_eval: false
+eval_strategy: no
+save_strategy: steps
+logging_steps: 1
+logging_first_step: true
+logging_strategy: steps
+
+# ========================
+# Output & Checkpointing
+# ========================
+output_dir: checkpoints/CRAFT-SFT
+overwrite_output_dir: false
+save_only_model: false
+
+# ========================
+# Reporting & Logging
+# ========================
+report_to:
+  - tensorboard
+log_level: info
+
+# ========================
+# System & Performance
+# ========================
+seed: 42
+dataloader_num_workers: 4
+dataloader_pin_memory: true
+ddp_find_unused_parameters: false
+
+# DeepSpeed configuration
+# ZeRO-2 is faster and sufficient for most models
+deepspeed: cfg/deepspeed/ds_config_zero2.json
+
+# ========================
+# Advanced Options
+# ========================
+save_safetensors: true
+
+# Resume from checkpoint (if needed)
+# resume_from_checkpoint: checkpoints/CRAFT-SFT/checkpoint-200

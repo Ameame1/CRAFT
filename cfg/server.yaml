@@ -1,0 +1,30 @@
+# ========================================
+# CRAFT Server Configuration
+# For vLLM inference server
+# ========================================
+
+# Model to serve
+model: Qwen/Qwen2.5-1.5B-Instruct
+  # Options:
+  # - Qwen/Qwen2.5-0.5B-Instruct
+  # - Qwen/Qwen2.5-1.5B-Instruct
+  # - Qwen/Qwen2.5-3B-Instruct
+  # - Qwen/Qwen2.5-7B-Instruct
+  # - checkpoints/CRAFT-GRPO/checkpoint-xxx
+
+# Server settings
+port: 8002
+host: 0.0.0.0
+
+# Model settings
+torch_dtype: bfloat16
+
+# vLLM settings
+gpu_memory_utilization: 0.85
+max_model_len: 16384
+max_num_seqs: 64
+tensor_parallel_size: 1
+enable_prefix_caching: true
+
+# GPU assignment (comma-separated, e.g., "0,1")
+cuda_visible_devices: "0"

@@ -1,0 +1,78 @@
+# ========================================
+# CRAFT Judge Configuration
+# For GRPO training reward computation (R_faith)
+# ========================================
+# Supports two modes:
+#   1. API mode (default): Qwen3-max via DashScope API
+#   2. Local mode: Qwen3-30B via local vLLM server
+# ========================================
+
+# Standalone local judge server settings used by src/judge/server.py.
+model: Qwen/Qwen3-30B-A3B-Instruct-2507
+port: 8000
+host: 0.0.0.0
+torch_dtype: bfloat16
+tensor_parallel_size: 4
+gpu_memory_utilization: 0.85
+max_model_len: 16384
+max_num_seqs: 128
+enable_prefix_caching: true
+
+# Reward-client mode. This can be overridden with JUDGE_MODE.
+mode: api  # 'api' | 'volcengine' | 'local'
+
+# ========================================
+# Volcengine (Ark) — DeepSeek-V3.2 / Doubao judge
+# ========================================
+# Cheaper than DashScope; OpenAI-compatible.
+# Key picked up from .env (VOLCENGINE=...) or env var VOLCENGINE.
+# Base URL: https://ark.cn-beijing.volces.com/api/v3
+# Recommended judge models (see docs/vol_models.md):
+#   - doubao-seed-2-0-pro-260215   (flagship Doubao text)
+#   - deepseek-v3-2-251201         (DeepSeek V3.2 latest)
+#   - qwen3-32b-20250429           (Qwen3 32B — close to local Qwen3-30B-A3B)
+volcengine_model: deepseek-v3-2-251201
+volcengine_base: https://ark.cn-beijing.volces.com/api/v3
+
+# ========================================
+# API Mode Configuration (Qwen3-max)
+# ========================================
+# No local GPU needed - uses cloud API
+# Set environment variables:
+#   QWEN_API_KEY or DASHSCOPE_API_KEY: Your API key
+#   QWEN_API_BASE: API endpoint (optional, defaults to DashScope)
+#
+# Get your API key from: https://dashscope.console.aliyun.com/
+#
+# Available models: qwen-max, qwen-plus, qwen-turbo
+api_model: qwen-max
+
+# ========================================
+# Local Mode Configuration (Qwen3-30B)
+# ========================================
+# Requires local vLLM server running on GPU
+# Start server: ./scripts/server/start_judge.sh
+#
+# Set environment variable:
+#   LOCAL_JUDGE_URL: Server URL (default: http://localhost:8000/v1)
+local_model: Qwen/Qwen3-30B-A3B-Instruct-2507
+local_port: 8000
+local_cuda_devices: "4,5,6,7"
+
+# ========================================
+# Common Settings
+# ========================================
+batch_reward_workers: 32  # Concurrent API calls for reward computation
+
+# ========================================
+# Usage Examples
+# ========================================
+# API Mode (recommended for simplicity):
+#   export QWEN_API_KEY="sk-xxxxx"
+#   export JUDGE_MODE=api
+#   ./scripts/train/grpo.sh
+#
+# Local Mode (for offline training or cost savings):
+#   export JUDGE_MODE=local
+#   ./scripts/server/start_judge.sh  # Start on GPUs 4-7
+#   ./scripts/train/grpo.sh          # Train on GPUs 0-3

@@ -1,0 +1,144 @@
+# ========================================
+# CRAFT GRPO Training Configuration
+# Group Relative Policy Optimization with Judge Rewards
+# ========================================
+# Judge supports two modes (set via JUDGE_MODE env var):
+#   API mode: All GPUs for training, judge via Qwen3-max API
+#   Local mode: GPU 0,1 for training, GPU 2,3 for Qwen3-30B judge server
+# ========================================
+
+# Model
+# Supported models: Qwen2.5-0.5B, 1.5B, 3B, 7B
+model: Qwen/Qwen2.5-1.5B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+attn_impl: flash_attn
+tuner_type: full
+use_hf: true
+
+# Dataset
+# Template-specific datasets available:
+# - data/train/grpo/grpo_25000_v1_messages.jsonl (full: plan + gold_docs + reason + answer)
+# - data/train/grpo/grpo_25000_v2_messages.jsonl (no plan: gold_docs + reason + answer)
+# - data/train/grpo/grpo_25000_v3_messages.jsonl (no gold_docs: plan + reason + answer)
+# - data/train/grpo/grpo_25000_v4_messages.jsonl (minimal: reason + answer)
+# - data/train/grpo/grpo_25000_v5_messages.jsonl (answer only)
+dataset: data/train/grpo/grpo_25000_v1_messages.jsonl
+dataset_num_proc: 8
+max_length: 8192
+vllm_mode: 'colocate'  # Training and inference share GPU resources
+vllm_tensor_parallel_size: 1
+sleep_level: 1  # Releases vLLM GPU memory during training
+
+# ========================================
+# GRPO & Rewards
+# ========================================
+rlhf_type: grpo
+
+# Reward functions (Paper notation: R_fmt, R_ans, R_gold, R_faith)
+# Choose based on template version:
+# - v1/v2: All 4 rewards make sense
+# - v3/v4: Exclude relevance_reward (no gold_docs)
+# - v5: Only format_reward and accuracy_reward (no reasoning)
+reward_funcs:
+  - format_reward                    # R_fmt: Format correctness
+  - accuracy_reward                  # R_ans: Answer accuracy
+  - judge_overall_consistency_reward # R_faith: Faithfulness audit
+  - relevance_reward                 # R_gold: Citation accuracy (v1/v2 only)
+
+reward_weights:
+  - 1.0  # R_fmt
+  - 1.0  # R_ans
+  - 1.0  # R_faith
+  - 1.0  # R_gold
+
+# Template version for dataset (used by reward functions)
+# Options: v1, v2, v3, v4, v5
+template_version: v1
+
+# Judge Model Configuration
+# API mode: export JUDGE_MODE=api QWEN_API_KEY="your-api-key"
+#   Models: qwen-max, qwen-plus, qwen-turbo
+# Local mode: export JUDGE_MODE=local && ./scripts/server/start_judge.sh
+#   Models: Qwen3-30B-A3B-Instruct (configured in start_judge.sh)
+judge_model: qwen-max
+
+# Batch reward settings (concurrent API calls for LLM judge)
+batch_reward_workers: 32
+
+# ========================================
+# Generation
+# ========================================
+num_beams: 1
+temperature: 1.0
+top_k: 20
+top_p: 0.9
+repetition_penalty: 1.0
+max_new_tokens: 256
+num_sample_generations: 4  # Number of samples per prompt for group comparison
+
+# ========================================
+# Training
+# ========================================
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+num_train_epochs: 1
+max_steps: -1
+warmup_ratio: 0.1
+learning_rate: 5.0e-6
+lr_scheduler_type: cosine
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 32  # Effective batch = 8 × 32 × 2 GPUs = 512
+max_grad_norm: 1.0
+weight_decay: 0.0
+
+# ========================================
+# Evaluation
+# ========================================
+do_eval: true
+eval_strategy: steps
+eval_steps: 25
+
+# ========================================
+# vLLM (for fast generation during rollout)
+# ========================================
+use_vllm: true
+vllm_gpu_memory_utilization: 0.15  # Conservative for colocate mode
+vllm_max_model_len: 8192
+
+# ========================================
+# DeepSpeed
+# ========================================
+deepspeed: cfg/deepspeed/ds_config_zero2.json
+
+# ========================================
+# Logging & Checkpoints
+# ========================================
+output_dir: checkpoints/CRAFT-GRPO
+overwrite_output_dir: true
+logging_steps: 1
+logging_first_step: true
+logging_strategy: steps
+log_level: info
+log_completions: false
+save_strategy: steps
+save_steps: 50
+save_total_limit: 1
+report_to:
+  - tensorboard
+
+# ========================================
+# Misc
+# ========================================
+seed: 42
+dataloader_num_workers: 4
+dataloader_pin_memory: true
+ddp_find_unused_parameters: false
+push_to_hub: false
+load_from_cache_file: false
+
+# Resume from checkpoint (if needed)
+# resume_from_checkpoint: checkpoints/CRAFT-GRPO/checkpoint-50

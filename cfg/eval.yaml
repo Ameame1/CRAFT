@@ -1,0 +1,61 @@
+# ========================================
+# CRAFT Evaluation Configuration
+# ========================================
+
+# Model to evaluate
+model: Qwen/Qwen2.5-7B-Instruct
+  # Options:
+  # - Qwen/Qwen2.5-0.5B-Instruct (base model)
+  # - Qwen/Qwen2.5-1.5B-Instruct (base model)
+  # - Qwen/Qwen2.5-3B-Instruct (base model)
+  # - Qwen/Qwen2.5-7B-Instruct (base model)
+  # - Qwen/Qwen3-4B-Instruct (base model)
+  # - checkpoints/CRAFT-GRPO/checkpoint-xxx (fine-tuned)
+
+torch_dtype: bfloat16
+use_hf: true
+
+# Dataset
+# Test datasets available (2000 samples each, per template version):
+# HotpotQA:
+#   - data/test/hotpotqa_2000_v1.jsonl through v5
+# MuSiQue:
+#   - data/test/musique_2000_v1.jsonl through v5
+# 2WikiMultiHopQA:
+#   - data/test/2wiki_2000_v1.jsonl through v5
+val_dataset: data/test/hotpotqa_2000_v1.jsonl
+
+# Template version for evaluation
+template_version: v1
+
+# Inference Backend
+infer_backend: vllm
+
+# vLLM Server Connection (evaluator connects to a running server)
+# Override with env vars: VLLM_HOST, VLLM_PORT
+vllm_host: "http://localhost"
+vllm_port: 8002
+
+# vLLM Server Launch Settings (used by scripts/server/start_craft.sh)
+vllm_gpu_memory_utilization: 0.9
+vllm_max_model_len: 16384
+vllm_max_num_seqs: 256
+vllm_tensor_parallel_size: -1  # -1 = auto-detect all GPUs
+
+# Concurrency (override with env vars: MAX_WORKERS, BATCH_SIZE)
+max_workers: 32   # concurrent requests to vLLM server
+batch_size: 100   # samples per progress-reporting batch
+
+# Generation Parameters
+max_new_tokens: 512
+temperature: 0.0  # Greedy for evaluation
+top_k: 0
+top_p: 1.0
+repetition_penalty: 1.0
+num_beams: 1
+
+# Stop tokens
+stop_words: ["<|im_end|>", "<|endoftext|>"]
+
+# Misc
+seed: 42
