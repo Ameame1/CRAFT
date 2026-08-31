@@ -3,6 +3,8 @@
 Official implementation of CRAFT, a GRPO framework for accurate and auditable
 post-retrieval reasoning in multi-hop question answering.
 
+**Project page:** [ameame1.github.io/CRAFT](https://ameame1.github.io/CRAFT/)
+
 CRAFT trains a policy to produce structured reasoning traces over fixed retrieved
 documents. Its objective combines format compliance, answer correctness, citation
 validity, and judge-based semantic faithfulness.
