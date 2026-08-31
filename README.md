@@ -1,4 +1,4 @@
-# CRAFT: Calibrated Reasoning with Answer-Faithful Traces for Multi-Hop Question Answering
+# Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning
 
 Official implementation of CRAFT, a GRPO framework for accurate and auditable
 post-retrieval reasoning in multi-hop question answering.
