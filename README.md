@@ -1,8 +1,19 @@
-# Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning
+<p align="center">
+  <img src="docs/assets/craft-logo.svg" alt="CRAFT: linked evidence and verified reasoning" width="420">
+</p>
 
-**CRAFT** | [Project Page](https://ameame1.github.io/CRAFT/) |
-[Model Checkpoints](https://huggingface.co/Ameame1002/CRAFT) |
-[Quick Start](#installation) | [Citation](#citation)
+<h1 align="center">Does Faithfulness-Guided Alignment Hurt Accuracy?<br>Unlocking Accurate and Faithful Post-Retrieval Reasoning</h1>
+
+<p align="center">
+  <a href="https://ameame1.github.io/CRAFT/"><img src="https://img.shields.io/badge/Project_Page-Visit-108a96?style=flat-square&amp;logo=githubpages&amp;logoColor=white" alt="Project page"></a>
+  <a href="https://huggingface.co/Ameame1002/CRAFT"><img src="https://img.shields.io/badge/Hugging_Face-Models-e3ad25?style=flat-square&amp;logo=huggingface&amp;logoColor=white" alt="Hugging Face models"></a>
+  <a href="https://github.com/Ameame1/CRAFT"><img src="https://img.shields.io/badge/GitHub-Code-29233f?style=flat-square&amp;logo=github&amp;logoColor=white" alt="GitHub code"></a>
+  <a href="#citation"><img src="https://img.shields.io/badge/Citation-BibTeX-d6336c?style=flat-square" alt="Citation"></a>
+</p>
+
+<p align="center"><b>Structured traces. Rule-based rewards. Semantic faithfulness audits.</b></p>
+
+<p align="center"><a href="#overview">Overview</a> &middot; <a href="#models">Models</a> &middot; <a href="#installation">Quick Start</a> &middot; <a href="#evaluation">Evaluation</a></p>
 
 ## Overview
 
@@ -15,6 +26,13 @@ CRAFT trains a policy to produce structured reasoning traces over fixed retrieve
 documents. Its objective combines format compliance, answer correctness, citation
 validity, and judge-based semantic faithfulness. Five trace variants expose a
 capacity-dependent trade-off between auditability and learnability.
+
+<p align="center">
+  <a href="docs/assets/craft-framework.png"><img src="docs/assets/craft-framework.png" alt="CRAFT framework: trace variants, decomposed reward auditor, and faithfulness audit principle" width="100%"></a>
+</p>
+
+*CRAFT framework from the manuscript: structured trace variants, decomposed
+rewards, and semantic faithfulness checks.*
 
 ## Code
 
@@ -48,6 +66,7 @@ Each model is stored in a `<scale>_<variant>` subfolder.
 | 0.5B | `0.5B_v1` through `0.5B_v4` | Local 312-step GRPO runs |
 | 1.5B | `1.5B_v1` through `1.5B_v4` | Local 312-step GRPO runs |
 | 3B | `3B_v1` through `3B_v4` | Local 312-step GRPO runs |
+| 0.5B / 1.5B / 3B | `0.5B_v5`, `1.5B_v5`, `3B_v5` | Legacy `GRPO_*` checkpoints, renamed without changing weights |
 | 7B | `7B_v1` through `7B_v4` | Archived judge-enabled checkpoints |
 | 7B | `7B_v5` | Archived answer-only checkpoint, without judge reward |
 
