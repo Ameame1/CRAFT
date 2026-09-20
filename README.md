@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://arxiv.org/abs/2602.01348"><img src="https://img.shields.io/badge/arXiv-2602.01348-b31b1b?style=flat-square&amp;logo=arxiv&amp;logoColor=white" alt="arXiv paper"></a>
-  <img src="https://img.shields.io/badge/EMNLP_2026-Main-108a96?style=flat-square" alt="Accepted to EMNLP 2026 Main Conference">
+  <a href="#citation"><img src="https://img.shields.io/badge/EMNLP_2026-Main-108a96?style=flat-square" alt="Accepted to EMNLP 2026 Main Conference"></a>
   <a href="https://ameame1.github.io/CRAFT/"><img src="https://img.shields.io/badge/Page-108a96?style=flat-square&amp;logo=githubpages&amp;logoColor=white" alt="Project page"></a>
   <a href="https://huggingface.co/Ameame1002/CRAFT"><img src="https://img.shields.io/badge/Models-e3ad25?style=flat-square&amp;logo=huggingface&amp;logoColor=white" alt="Hugging Face models"></a>
   <a href="https://github.com/Ameame1/CRAFT"><img src="https://img.shields.io/badge/Code-29233f?style=flat-square&amp;logo=github&amp;logoColor=white" alt="GitHub code"></a>
