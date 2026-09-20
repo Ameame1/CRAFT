@@ -5,6 +5,8 @@
 <h1 align="center">Does Faithfulness-Guided Alignment Hurt Accuracy?<br>Unlocking Accurate and Faithful Post-Retrieval Reasoning</h1>
 
 <p align="center">
+  <a href="https://arxiv.org/abs/2602.01348"><img src="https://img.shields.io/badge/arXiv-2602.01348-b31b1b?style=flat-square&amp;logo=arxiv&amp;logoColor=white" alt="arXiv paper"></a>
+  <img src="https://img.shields.io/badge/EMNLP_2026-Main_Conference-108a96?style=flat-square" alt="Accepted to EMNLP 2026 Main Conference">
   <a href="https://ameame1.github.io/CRAFT/"><img src="https://img.shields.io/badge/Project_Page-Visit-108a96?style=flat-square&amp;logo=githubpages&amp;logoColor=white" alt="Project page"></a>
   <a href="https://huggingface.co/Ameame1002/CRAFT"><img src="https://img.shields.io/badge/Hugging_Face-Models-e3ad25?style=flat-square&amp;logo=huggingface&amp;logoColor=white" alt="Hugging Face models"></a>
   <a href="https://github.com/Ameame1/CRAFT"><img src="https://img.shields.io/badge/GitHub-Code-29233f?style=flat-square&amp;logo=github&amp;logoColor=white" alt="GitHub code"></a>
@@ -14,6 +16,11 @@
 <p align="center"><b>Structured traces. Rule-based rewards. Semantic faithfulness audits.</b></p>
 
 <p align="center"><a href="#overview">Overview</a> &middot; <a href="#models">Models</a> &middot; <a href="#installation">Quick Start</a> &middot; <a href="#evaluation">Evaluation</a></p>
+
+## News
+
+CRAFT has been accepted to the **EMNLP 2026 Main Conference**.
+[Read the paper on arXiv](https://arxiv.org/abs/2602.01348).
 
 ## Overview
 
@@ -223,9 +230,14 @@ reasoning.
 ```bibtex
 @misc{liu2026craft,
   title = {Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning},
-  author = {Liu, Yu and Zhang, Wenxiao and Guo, Diandian and Cao, Cong and Yuan, Fangfang and Sun, Qiang and Liu, Yanbing and Hong, Jin Bum and Ma, Zhiyuan},
+  author = {Liu, Yu and Zhang, Wenxiao and Guo, Diandian and Cao, Cong and Yuan, Fangfang and Sun, Qiang and Liu, Yanbing and Hong, Jin B. and Ma, Zhiyuan},
   year = {2026},
-  url = {https://github.com/Ameame1/CRAFT}
+  eprint = {2602.01348},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi = {10.48550/arXiv.2602.01348},
+  url = {https://arxiv.org/abs/2602.01348},
+  note = {Accepted to EMNLP 2026 Main Conference}
 }
 ```
 
