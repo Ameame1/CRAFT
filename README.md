@@ -28,7 +28,7 @@ validity, and judge-based semantic faithfulness. Five trace variants expose a
 capacity-dependent trade-off between auditability and learnability.
 
 <p align="center">
-  <a href="docs/assets/craft-framework.png"><img src="docs/assets/craft-framework.png" alt="CRAFT framework: trace variants, decomposed reward auditor, and faithfulness audit principle" width="100%"></a>
+  <a href="docs/assets/craft-framework-cropped.png"><img src="docs/assets/craft-framework-cropped.png" alt="CRAFT framework: trace variants, decomposed reward auditor, and faithfulness audit principle" width="100%"></a>
 </p>
 
 *CRAFT framework from the manuscript: structured trace variants, decomposed
