@@ -129,6 +129,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--sky);outline-offset
   border-radius:999px;padding:4px 12px;box-shadow:2.5px 2.5px 0 var(--shadow);
 }
 .theme-btn:active{transform:translate(2px,2px);box-shadow:none}
+@media (max-width:640px){
+  .nav-in{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:8px;padding:8px 20px}
+  .nav-links{grid-column:1 / -1;grid-row:2;flex-wrap:nowrap;overflow-x:auto;width:100%;margin:0;padding-bottom:3px}
+  .nav-links a{flex:none;letter-spacing:0;padding:4px 8px}
+  .theme-btn{grid-column:2;grid-row:1;width:48px;height:36px;margin:0;padding:0;white-space:nowrap}
+  .nav-logo{letter-spacing:0}
+}
 
 /* ============================ HERO ============================ */
 .hero{position:relative;overflow:hidden;padding:84px 0 72px;border-bottom:3px solid var(--ink)}
@@ -152,6 +159,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--sky);outline-offset
   text-wrap:balance;
 }
 .hero-sub{font-size:clamp(17px,2.4vw,23px);font-weight:800;letter-spacing:.2px;margin:2px 0 14px}
+.paper-title{font-size:20px;line-height:1.4;letter-spacing:0;max-width:65ch;margin:16px 0;font-weight:800;overflow-wrap:break-word}
+.result-source{border-left:3px solid var(--sky);padding:8px 16px;margin:20px 0;color:var(--ink-soft);font-size:14px;line-height:1.6}
 .hero-sub em{font-style:normal;color:var(--sakura)}
 .hero-authors{max-width:62ch;color:var(--ink-soft);font-size:13.5px;font-weight:700;margin:0 0 12px}
 .hero-tag{max-width:56ch;color:var(--ink-soft);font-size:15.5px;margin:0 0 22px}
@@ -486,6 +495,7 @@ html.js-anim .reveal.in{opacity:1;transform:none}
     <div>
       <span class="hero-eyebrow">Multi-hop QA × Reinforcement Learning</span>
       <h1>CRAFT</h1>
+      <p class="paper-title">Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning</p>
       <p class="hero-sub"><em>C</em>alibrated <em>R</em>easoning with <em>A</em>nswer-<em>F</em>aithful <em>T</em>races</p>
       <p class="hero-authors">Yu Liu · Wenxiao Zhang · Diandian Guo · Cong Cao · Fangfang Yuan · Qiang Sun · Yanbing Liu · Jin Bum Hong · Zhiyuan Ma</p>
       <p class="hero-tag">
@@ -497,6 +507,7 @@ html.js-anim .reveal.in{opacity:1;transform:none}
         <a class="btn btn-primary" href="#results">See the results ▶</a>
         <a class="btn" href="#chain">How it works</a>
         <a class="btn" href="https://github.com/Ameame1/CRAFT" target="_blank" rel="noopener">Code on GitHub</a>
+        <a class="btn" href="https://huggingface.co/Ameame1002/CRAFT" target="_blank" rel="noopener">Model checkpoints</a>
       </div>
       <div class="hero-stats">
         <div class="stat reveal"><div class="v num">53.13<small> EM</small></div><div class="k">MuSiQue — CRAFT<span class="num">·</span>7B, near the best API result (53.70)</div></div>
@@ -538,8 +549,8 @@ html.js-anim .reveal.in{opacity:1;transform:none}
       <a class="contrib reveal" href="#results">
         <span class="c-num">3</span>
         <h3>Faithfulness ↑ <i>and</i> accuracy ↑</h3>
-        <p>The judge reward improves both answer quality and Faithfulness across all 12 applicable 7B settings.
-        CRAFT·7B reaches API-level answer performance, while human validation supports the judge (93.0%, κ 0.78).</p>
+        <p>The manuscript reports joint answer-quality and Faithfulness gains, with a capacity-dependent preference for trace structure.
+        The result plots reproduce manuscript values; their fitted simulation provenance is noted below.</p>
         <span class="c-go">see the scoreboard ▶</span>
       </a>
     </div>
@@ -782,16 +793,20 @@ html.js-anim .reveal.in{opacity:1;transform:none}
 <section id="results" class="tone">
   <div class="wrap">
     <div class="ep"><span class="ep-num">EP.05</span><span class="ep-tag">the scoreboard</span></div>
-    <h2>A 7B with <span class="hl">API-level accuracy</span></h2>
+    <h2>Manuscript-reported <span class="hl">results</span></h2>
     <p class="lede">
-      Trained on 20k mixed samples and reported as the mean of ten 1,000-example evaluation runs,
-      <b>CRAFT<span class="num">·</span>7B</b> (v1, full chain) reaches the best API EM on HotpotQA and exceeds it
-      on 2WikiMHQA by <b class="num">+7.76 EM</b>, while remaining close on MuSiQue.
+      In the manuscript's reported values,
+      <b>CRAFT<span class="num">·</span>7B</b> (v1, full chain) exceeds the best API EM on HotpotQA;
+      its lead on 2WikiMHQA is <b class="num">+7.76 EM</b>, while it remains close on MuSiQue.
     </p>
+    <p class="result-source"><b>Data provenance.</b> These numbers match the manuscript's tables, not a fresh evaluation of the released checkpoints.
+      The main-result aggregates are fitted simulations anchored on archived evaluations; ten fitted 1,000-example replicates are not ten independent inference runs.
+      The w/o-judge values are Full-anchored counterfactual estimates and do not establish a measured causal effect of removing the judge reward.
+      <a href="https://github.com/Ameame1/CRAFT#results-and-provenance">Source and checkpoint details</a>.</p>
 
     <div class="chart-block reveal">
       <div class="chart-card">
-        <div class="chart-head"><span class="chart-title">Exact Match (%)</span><span class="chart-sub">CRAFT_v1 · mean of ten 1,000-example runs</span></div>
+        <div class="chart-head"><span class="chart-title">Exact Match (%)</span><span class="chart-sub">CRAFT_v1 · manuscript values, fitted aggregates</span></div>
         <div class="legend" id="legend-em"></div>
         <div id="chart-em"></div>
         <details class="tbl"><summary>data table</summary>
@@ -845,11 +860,11 @@ html.js-anim .reveal.in{opacity:1;transform:none}
     <div class="callout-duo">
       <div class="callout reveal">
         <div class="big num">+1.91 <small>Faith</small> &nbsp;·&nbsp; +1.60 <small>EM</small></div>
-        <p><b>The judge reward improves both.</b> On MuSiQue v1, full CRAFT raises Faithfulness from 81.96 to 83.87 and EM from 51.53 to 53.13 over the w/o-judge condition.</p>
+        <p><b>Reported counterfactual comparison.</b> On MuSiQue v1, the manuscript lists Faithfulness of 81.96 versus 83.87 and EM of 51.53 versus 53.13 for w/o-judge versus full CRAFT. These are fitted estimates, not an independently measured ablation.</p>
       </div>
       <div class="callout reveal">
         <div class="big num">+20.36 <small>EM</small></div>
-        <p><b>CRAFT unlocks task-specific capacity.</b> At 7B, it improves 2WikiMHQA EM from 57.87 to 78.23; consistent gains across all datasets begin at 1.5B.</p>
+        <p><b>Task-specific capacity is the central hypothesis.</b> The manuscript reports 2WikiMHQA EM of 57.87 for Base and 78.23 for CRAFT at 7B, with consistent gains across the three datasets beginning at 1.5B.</p>
       </div>
     </div>
   </div>
@@ -1098,7 +1113,7 @@ function drawGroupedBars(mount, legendMount, data, metric){
       if (s.key === 'craft'){ // selective direct label on the protagonist only
         const lab = el('text', {x:x+barW/2, y:y-6, 'text-anchor':'middle', 'font-size':11.5,
           'font-weight':900, fill: colors[si], style:'font-variant-numeric:tabular-nums'}, svg);
-        lab.textContent = v.toFixed(1);
+        lab.textContent = v.toFixed(2);
       }
       // hover hit target (wider than the mark)
       const hit = el('rect', {x:x-2, y:m.t, width:barW+4, height:ih, fill:'transparent'}, svg);

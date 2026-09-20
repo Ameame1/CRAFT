@@ -1,13 +1,72 @@
 # Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning
 
-Official implementation of CRAFT, a GRPO framework for accurate and auditable
-post-retrieval reasoning in multi-hop question answering.
+**CRAFT** | [Project Page](https://ameame1.github.io/CRAFT/) |
+[Model Checkpoints](https://huggingface.co/Ameame1002/CRAFT) |
+[Quick Start](#installation) | [Citation](#citation)
 
-**Project page:** [ameame1.github.io/CRAFT](https://ameame1.github.io/CRAFT/)
+## Overview
+
+CRAFT is a GRPO framework for structured, machine-auditable post-retrieval
+reasoning in multi-hop question answering. Its central research question is
+whether faithfulness-guided alignment can unlock task-specific reasoning
+capacity without sacrificing answer accuracy.
 
 CRAFT trains a policy to produce structured reasoning traces over fixed retrieved
 documents. Its objective combines format compliance, answer correctness, citation
-validity, and judge-based semantic faithfulness.
+validity, and judge-based semantic faithfulness. Five trace variants expose a
+capacity-dependent trade-off between auditability and learnability.
+
+## Code
+
+The release includes prompt templates, training configurations, inference
+servers, and answer/faithfulness evaluation. The workflow is:
+
+1. Normalize the three QA benchmarks and render a selected trace template.
+2. Train with deterministic rewards and, for structured variants, a local judge.
+3. Generate answers over fixed retrieved documents.
+4. Evaluate answer correctness and audit the emitted reasoning traces.
+
+```text
+cfg/                 Training, evaluation, vLLM, and DeepSpeed configurations
+scripts/preprocess/  Dataset download and template rendering
+scripts/train/       SFT and GRPO launchers
+scripts/eval/        Answer and faithfulness evaluation
+src/templates/       CRAFT v1-v5 prompt templates
+src/rewards/         Deterministic and judge-based rewards
+src/train/           SFT and GRPO trainer wrappers
+src/eval/            Parsing and evaluation metrics
+index.html           Interactive project page
+```
+
+## Models
+
+Checkpoints are hosted at [Ameame1002/CRAFT](https://huggingface.co/Ameame1002/CRAFT).
+Each model is stored in a `<scale>_<variant>` subfolder.
+
+| Scale | Release directories | Checkpoint source |
+| --- | --- | --- |
+| 0.5B | `0.5B_v1` through `0.5B_v4` | Local 312-step GRPO runs |
+| 1.5B | `1.5B_v1` through `1.5B_v4` | Local 312-step GRPO runs |
+| 3B | `3B_v1` through `3B_v4` | Local 312-step GRPO runs |
+| 7B | `7B_v1` through `7B_v4` | Archived judge-enabled checkpoints |
+| 7B | `7B_v5` | Archived answer-only checkpoint, without judge reward |
+
+Download one model without fetching the entire repository:
+
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    "Ameame1002/CRAFT",
+    allow_patterns="7B_v1/*",
+    local_dir="./models/CRAFT",
+)
+```
+
+The resulting model path is `./models/CRAFT/7B_v1`. SFT checkpoints are not
+included in the current Hub release. Checkpoint availability does not establish
+that every manuscript-reported score is reproduced by that checkpoint; see
+[Results and Provenance](#results-and-provenance).
 
 ## Trace Variants
 
@@ -19,8 +78,9 @@ validity, and judge-based semantic faithfulness.
 | CRAFT v4 | `reason + answer` | format, answer, faithfulness |
 | CRAFT v5 | `answer` | format, answer |
 
-The repository includes the 20,000-example, 312-step configurations used for
-Qwen2.5-0.5B, 1.5B, 3B, and 7B across all five variants.
+The repository includes 20,000-example, 312-step configurations for
+Qwen2.5-0.5B, 1.5B, 3B, and 7B across all five variants. These local configurations
+are distinct from the archived 7B checkpoint source.
 
 ## Installation
 
@@ -108,17 +168,28 @@ python scripts/eval/faithfulness_eval.py \
   --template-version v1
 ```
 
-## Repository Layout
+## Results and Provenance
 
-```text
-cfg/                 Training, evaluation, vLLM, and DeepSpeed configurations
-scripts/preprocess/  Dataset download and template rendering
-scripts/train/       SFT and GRPO launchers
-scripts/eval/        Answer and faithfulness evaluation
-src/templates/       CRAFT v1-v5 prompt templates
-src/rewards/         Deterministic and judge-based rewards
-src/train/           SFT and GRPO trainer wrappers
-src/eval/            Parsing and evaluation metrics
+The [project page](https://ameame1.github.io/CRAFT/#results) displays values from
+the manuscript titled above, including comparisons across model capacities and
+the 7B trace variants. They are manuscript-reported values, not a new benchmark
+of the uploaded checkpoints.
+
+The archived result-generation audit marks the main-result aggregates as fitted
+simulations anchored on existing evaluation traces and summary scores. The
+w/o-judge comparison uses Full-anchored counterfactual estimates; it is not an
+independently measured judge-removal experiment. The fitted 7B v5 results also
+include dataset-specific score adjustments. The ten fitted 1,000-example
+replicates must not be interpreted as ten fresh model-inference runs.
+
+The local small-model anchors use checkpoint-312; the archived 7B v1-v4 anchors
+reference checkpoint-390. Matching the page to the manuscript checks numerical
+consistency, not experimental reproducibility. To verify page consistency with
+your local manuscript:
+
+```bash
+python scripts/analysis/check_project_page.py \
+  --paper /path/to/EMNLP_CRAFT/main.tex --page index.html
 ```
 
 ## Scope
@@ -127,6 +198,17 @@ CRAFT operates after retrieval: retrieved documents are treated as fixed inputs.
 The reported faithfulness metric measures consistency and evidence support in the
 emitted trace; it should not be interpreted as direct access to latent model
 reasoning.
+
+## Citation
+
+```bibtex
+@misc{liu2026craft,
+  title = {Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning},
+  author = {Liu, Yu and Zhang, Wenxiao and Guo, Diandian and Cao, Cong and Yuan, Fangfang and Sun, Qiang and Liu, Yanbing and Hong, Jin Bum and Ma, Zhiyuan},
+  year = {2026},
+  url = {https://github.com/Ameame1/CRAFT}
+}
+```
 
 ## License
 
