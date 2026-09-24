@@ -228,16 +228,11 @@ reasoning.
 ## Citation
 
 ```bibtex
-@misc{liu2026craft,
-  title = {Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning},
-  author = {Liu, Yu and Zhang, Wenxiao and Guo, Diandian and Cao, Cong and Yuan, Fangfang and Sun, Qiang and Liu, Yanbing and Hong, Jin B. and Ma, Zhiyuan},
-  year = {2026},
-  eprint = {2602.01348},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.CL},
-  doi = {10.48550/arXiv.2602.01348},
-  url = {https://arxiv.org/abs/2602.01348},
-  note = {Accepted to EMNLP 2026 Main Conference}
+@article{liu2026craft,
+  title   = {Does Faithfulness-Guided Alignment Hurt Accuracy? Unlocking Accurate and Faithful Post-Retrieval Reasoning},
+  author  = {Liu, Yu and Zhang, Wenxiao and Guo, Diandian and Cao, Cong and Yuan, Fangfang and Sun, Qiang and Liu, Yanbing and Hong, Jin B. and Ma, Zhiyuan},
+  journal = {arXiv preprint arXiv:2602.01348},
+  year    = {2026}
 }
 ```
 
